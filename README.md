@@ -6,15 +6,14 @@
 - @MVC를 구현하면서 MVC 구조와 MVC의 각 역할을 이해한다.
 - 새로운 기술을 점진적으로 적용하는 방법을 학습한다.
 
-### 시작 가이드
-1. 미션을 시작하기 전에 학습 테스트를 먼저 진행합니다.
-    - [Junit3TestRunner](study/src/test/java/reflection/Junit3TestRunner.java)
-    - [Junit4TestRunner](study/src/test/java/reflection/Junit4TestRunner.java)
-    - [ReflectionTest](study/src/test/java/reflection/ReflectionTest.java)
-    - [ReflectionsTest](study/src/test/java/reflection/ReflectionsTest.java)
-    - 나머지 학습 테스트는 강의 시간에 풀어봅시다.
-2. 학습 테스트를 완료하면 LMS의 1단계 미션부터 진행합니다.
+### 필요 요구사항
+- build.gradle을 참고하여 환경 설정은 스스로 찾아서 한다.
 
-## 학습 테스트
-1. [Reflection API](study/src/test/java/reflection)
-2. [Servlet](study/src/test/java/servlet)
+## 0단계 - Reflection, DI 학습 미션
++ [ ] study 디렉토리 안의 test를 아래 순서대로 모두 수행한다.
++ [ ] study/src/test/java/reflection 디렉토리 내부의 테스트를 수행한다.
+   + [ ] [Junit3TestRunner](https://github.com/gdsc-konkuk/java-mvc/blob/main/study/src/test/java/reflection/Junit3TestRunner.java)
+   + [ ] [Junit4TestRunner](https://github.com/gdsc-konkuk/java-mvc/blob/main/study/src/test/java/reflection/Junit4TestRunner.java)
+   + [ ] [ReflectionTest](https://github.com/gdsc-konkuk/java-mvc/blob/main/study/src/test/java/reflection/ReflectionTest.java)
+   + [ ] [ReflectionsTest](https://github.com/gdsc-konkuk/java-mvc/blob/main/study/src/test/java/reflection/ReflectionsTest.java)
++ [ ] study/src/test/java/servlet 디렉토리 내부의 테스트를 수행한다.
