@@ -8,11 +8,11 @@
 
 ### 필요 요구사항
 - build.gradle을 참고하여 환경 설정은 스스로 찾아서 한다.
-- 미션을 시작할 때, 자신의 영문 이름의 브랜치를 파고, 작업 후 각자 브랜치로 커밋, 푸시한다.(예: YoonByungWook)
+- 미션을 시작할 때, 자신의 영문 이름 + 시작기수의 브랜치를 파고, 작업 후 각자 브랜치로 커밋, 푸시한다.(예: YoonByungWook24)
 - 예시
 ```text
-git branch YoonByungWook
-git checkout YoonByungWook
+git branch YoonByungWook24
+git checkout YoonByungWook24
 ```
 
 # 0단계 - Reflection, DI 학습 미션
