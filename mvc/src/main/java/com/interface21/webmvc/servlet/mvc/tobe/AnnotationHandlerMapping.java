@@ -58,7 +58,7 @@ public class AnnotationHandlerMapping {
             throw new IllegalArgumentException("인스턴스화 할 수 없습니다. "+clazz.getName());
         }
     }
-    public Object getHandler(final HttpServletRequest request) {
+    public HandlerExecution getHandler(final HttpServletRequest request) {
         final String uri = request.getRequestURI();
         final String method = request.getMethod();
         final RequestMethod requestMethod = RequestMethod.valueOf(method);

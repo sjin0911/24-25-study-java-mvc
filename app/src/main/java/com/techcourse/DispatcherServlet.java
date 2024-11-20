@@ -1,5 +1,7 @@
 package com.techcourse;
 
+import com.interface21.webmvc.servlet.mvc.asis.Controller;
+import com.interface21.webmvc.servlet.mvc.tobe.AnnotationHandlerMapping;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,12 +10,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.interface21.webmvc.servlet.view.JspView;
 
+import java.util.List;
+
 public class DispatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
 
     private ManualHandlerMapping manualHandlerMapping;
+    private AnnotationHandlerMapping annotationHandlerMapping;
 
     public DispatcherServlet() {
     }
@@ -21,7 +26,7 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init() {
         manualHandlerMapping = new ManualHandlerMapping();
-        manualHandlerMapping.initialize();
+        annotationHandlerMapping = new AnnotationHandlerMapping();
     }
 
     @Override
@@ -31,8 +36,13 @@ public class DispatcherServlet extends HttpServlet {
 
         try {
             final var controller = manualHandlerMapping.getHandler(requestURI);
-            final var viewName = controller.execute(request, response);
-            move(viewName, request, response);
+            if(controller == null){
+                final var handlerExecution = annotationHandlerMapping.getHandler(request);
+                handlerExecution.handle(request, response);
+            }else {
+                final var viewName = controller.execute(request, response);
+                move(viewName, request, response);
+            }
         } catch (Throwable e) {
             log.error("Exception : {}", e.getMessage(), e);
             throw new ServletException(e.getMessage());
