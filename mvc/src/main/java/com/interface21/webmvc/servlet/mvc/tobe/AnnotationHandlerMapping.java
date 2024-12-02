@@ -10,8 +10,12 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.rmi.NoSuchObjectException;
+import java.sql.Array;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public class AnnotationHandlerMapping implements HandlerMapping{
 
@@ -27,47 +31,44 @@ public class AnnotationHandlerMapping implements HandlerMapping{
 
     public void initialize() {
         final Reflections reflections = new Reflections(basePackage);
-        final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Controller.class);
+        final Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
 
-        for(Class<?> clazz : classes){
-            Object instance = getInstance(clazz);
-            final List<Method> methods = Arrays.stream(clazz.getDeclaredMethods())
-                    .filter(method -> method.isAnnotationPresent(RequestMapping.class))
-                    .collect(Collectors.toList());
-            methods.forEach(method -> {
-                final RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-                for(RequestMethod requestMethod: requestMapping.method()){
-                    final HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMethod);
-                    final HandlerExecution handlerExecution = new HandlerExecution(instance, method);
-                    handlerExecutions.put(handlerKey, handlerExecution);
+        for(Class<?> controllerClass : controllers){
+            final Method[] methods = controllerClass.getDeclaredMethods();
+            for(Method method : methods){
+                final RequestMapping  requestMapping = method.getAnnotation(RequestMapping.class);
+                final Object handler = getHandler(method);
+                final List<HandlerKey> handlerKeys = getHandlerKeys(requestMapping);
+
+                for(HandlerKey handlerKey : handlerKeys){
+                    handlerExecutions.put(handlerKey, new HandlerExecution(handler, method));
                 }
-            });
+            };
         }
 
         log.info("Initialized AnnotationHandlerMapping!");
     }
 
-    public Object getInstance(Class<?> clazz) {
-        try {
-            return clazz.getDeclaredConstructor().newInstance();
-        }catch (NoSuchMethodException e){
-            log.error(e.getMessage());
-            throw new IllegalArgumentException("생성자를 가져올 수 없습니다. "+clazz.getName());
-        }catch (InstantiationException | IllegalAccessException | InvocationTargetException e){
-            log.error(e.getMessage());
-            throw new IllegalArgumentException("인스턴스화 할 수 없습니다. "+clazz.getName());
-        }
+    public Object getHandler(final HttpServletRequest request){
+        return handlerExecutions.get(
+                new HandlerKey(request.getRequestURI(), RequestMethod.valueOf(request.getMethod()))
+        );
     }
-    public HandlerExecution getHandler(final HttpServletRequest request) {
-        final String uri = request.getRequestURI();
-        final String method = request.getMethod();
-        final RequestMethod requestMethod = RequestMethod.valueOf(method);
 
-        final HandlerKey handlerKey = new HandlerKey(uri, requestMethod);
-
-        if(handlerExecutions.containsKey(handlerKey)){
-            return handlerExecutions.get(handlerKey);
+    private static List<HandlerKey> getHandlerKeys(final RequestMapping requestMapping){
+        if(requestMapping != null){
+            return Arrays.stream(requestMapping.method())
+                    .map(method -> new HandlerKey(requestMapping.value(), method))
+                    .collect(toList());
         }
-        return null;
+        return new ArrayList<>();
+    }
+    private static Object getHandler(final Method method) {
+        try{
+            return method.getDeclaringClass().getConstructor().newInstance();
+        }catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+            NoSuchMethodException e){
+            throw new RuntimeException();
+        }
     }
 }

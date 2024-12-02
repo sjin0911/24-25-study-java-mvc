@@ -1,6 +1,11 @@
 package com.techcourse;
 
+import com.interface21.webmvc.servlet.ModelAndView;
+import com.interface21.webmvc.servlet.View;
+import com.interface21.webmvc.servlet.mvc.asis.Controller;
 import com.interface21.webmvc.servlet.mvc.tobe.AnnotationHandlerMapping;
+import com.interface21.webmvc.servlet.mvc.tobe.HandlerExecution;
+import com.interface21.webmvc.servlet.mvc.tobe.HandlerMapping;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +16,7 @@ import com.interface21.webmvc.servlet.view.JspView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class DispatcherServlet extends HttpServlet {
@@ -18,49 +24,75 @@ public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
 
-    private ManualHandlerMapping manualHandlerMapping;
-    private AnnotationHandlerMapping annotationHandlerMapping;
+    private final List<HandlerMapping> handlerMappings;
 
     public DispatcherServlet() {
+        this.handlerMappings = new ArrayList<>();
     }
 
     @Override
     public void init() {
-        manualHandlerMapping = new ManualHandlerMapping();
-        annotationHandlerMapping = new AnnotationHandlerMapping();
+        handlerMappings.forEach(HandlerMapping::initialize);
+    }
 
-        manualHandlerMapping.initialize();
-        annotationHandlerMapping.initialize();
+    public void addHandlerMapping(final HandlerMapping handlerMapping){
+        handlerMappings.add(handlerMapping);
     }
 
     @Override
     protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException {
-        final String requestURI = request.getRequestURI();
-        log.debug("Method : {}, Request URI : {}", request.getMethod(), requestURI);
+        final var handler = getHandler(request);
 
-        try {
-            final var controller = manualHandlerMapping.getHandler(request);
-            if(controller==null){
-                final var handler = annotationHandlerMapping.getHandler(request);
-                handler.handle(request, response);
-            }else {
-                final var viewName = controller.execute(request, response);
-                move(viewName, request, response);
-            }
+        if(handler instanceof Controller){
+            handlerManualHandler(request, response, (Controller) handler);
+        }
+        if(handler instanceof HandlerExecution){
+            handlerAnnotationHandler(request, response, (HandlerExecution)handler);
+        }
+    }
 
-        } catch (Throwable e) {
-            log.error("Exception : {}", e.getMessage(), e);
+    private void handlerManualHandler(final HttpServletRequest request, final HttpServletResponse response
+                                      ,final Controller handler) throws ServletException{
+        try{
+            String viewName = handler.execute(request, response);
+            final ModelAndView modelAndView = new ModelAndView(new JspView(viewName));
+            renderView(modelAndView, request, response);
+        }catch (Throwable e){
             throw new ServletException(e.getMessage());
         }
     }
 
-    private void move(final String viewName, final HttpServletRequest request, final HttpServletResponse response) throws Exception {
-        if (viewName.startsWith(JspView.REDIRECT_PREFIX)) {
-            response.sendRedirect(viewName.substring(JspView.REDIRECT_PREFIX.length()));
-            return;
+    private static void handlerAnnotationHandler(final HttpServletRequest request, final HttpServletResponse response,
+                                                 final HandlerExecution handler){
+        try{
+            ModelAndView modelAndView = handler.handle(request, response);
+            renderView(modelAndView, request, response);
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
         }
+    }
 
-        final var requestDispatcher = request.getRequestDispatcher(viewName);
-        requestDispatcher.forward(request, response);
+    private static void handleAnnotationHandler(final HttpServletRequest request, final HttpServletResponse response,
+                                                final HandlerExecution handler){
+        try{
+            ModelAndView modelAndView = handler.handle(request, response);
+            renderView(modelAndView, request, response);
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    private Object getHandler(final HttpServletRequest request){
+        return handlerMappings.stream()
+                .map(handlerMapping -> handlerMapping.getHandler(request))
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElseThrow(RuntimeException::new);
+    }
+    private static void renderView(final ModelAndView modelAndView, final HttpServletRequest  request,
+                                   final HttpServletResponse response) throws Exception{
+        final Map<String, Object> model = modelAndView.getModel();
+        final View view = modelAndView.getView();
+        view.render(model, request, response);
     }
 }
