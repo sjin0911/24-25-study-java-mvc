@@ -299,3 +299,340 @@ HandlerMapping은 @Controller 애노테이션을 적용한 빈 객체가 처리�
 ## 7. 직접 설정 예
 
 @EnableWebMvc 애노테이션을 사용하지 않고 스프링 MVC를 사용하는 것도 가능
+
+# MVC 1: 요청 매핑, 커맨드 객체, 리다이렉트, 폼 태그, 모델
+
+## 1. 프로젝트 준비
+
+## 2. 요청 매핑 애노테이션을 이용한 경로 매핑
+
+웹 어플리케이션의 개발
+
+- 특정 요청 URL을 처리할 코드 → @Controller의 컨트롤러 클래스를 이용해 구현
+- 처리 결과를 HTML과 같은 형식으로 응답하는 코드
+
+요청 매핑 애노테이션을 사용해 메서드가 처리할 요청 경로를 지정
+
+@RequestMapping, @GetMapping, @PostMapping
+
+요청 매핑 애노테이션을 적용한 메서드를 두 개 이상 정의 가능
+
+```java
+@Controller 
+public class RegistController{
+	
+	@RequestMapping("/register/step1")
+	public String handleStep1(){
+		return "register/step";
+	}
+	
+	@RequestMapping("/register/step02")
+	public String handlerStep2(){
+		...
+	}
+	
+	@RequestMapping("/register/step03")
+	public String handleStep3(){
+		...
+	}
+}
+```
+
+대신에
+
+```java
+@Controller 
+@RequestMapping("/register")
+public class RegistController{
+	
+	@RequestMapping("/step1")
+	public String handleStep1(){
+		return "register/step";
+	}
+	
+	@RequestMapping("/step02")
+	public String handlerStep2(){
+		...
+	}
+	
+	@RequestMapping("/step03")
+	public String handleStep3(){
+		...
+	}
+}
+```
+
+## 3. GET과 POST 구분: @GetMapping, @PostMapping
+
+스프링 MVC는 별도 설정이 없으면 GET과 POST 방식에 상관없이 @RequestMapping에 지정한 경로와 일치하는 요청을 처리
+
+POST/GET 방식의 요청만 처리하고 싶을 경우 @PostMapping/@GetMapping 사용 가능
+
+@PutMapping, @DeleteMapping, @PatchMapping 등도 존재
+
+## 4. 요청 파라미터 접근
+
+약관 동의 화면을 생성하는 코드를 볼 때 약관에 동의할 경우 값이 true인 요청 파라미터를 POST 방식으로 지정
+
+- 컨트롤러 메서드에서 요청 파라미터를 사용하는 방법
+    - HttpServletRequest를 직접 이용하는 방법
+
+      메서드의 파라미터로 HttpServletRequest 타입을 사용하고 HttpServletRequest의 getParameter() 메서드를 사용해 파라미터의 값을 구하기
+
+    - @RequestParam 애노테이션 사용
+        - String value: HTTP 요청 파라미터의 이름 지정
+        - boolean required: 필수 여부 지정, default true
+        - String defaultValue: 요청 파라미터가 없을 때 사용할 문자열 값
+
+## 5. 리다이렉트 처리
+
+handleStep2() 메서드는 직접 주소를 입력해 접근하는 GET 방식의 요청은 처리하지 않음
+
+잘못된 전송 방식으로 요청이 왔을 경우 에러 화면보다 알맞은 경로로 리다이렉트가 필요
+
+- “redirect:경로”를 뷰 이름으로 리턴
+
+  @RequestMapping, @GetMapping 등 요청 매핑 관련 애노테이션을 적용한 메서드가 “redirect:”로 시작하는 경로를 리턴할 경우 나머지 경로를 이용해 리다이렉트할 경로를 구함
+
+  뒤 문자열이 “/”로 시작할 경우 웹 어플리케이션을 기준으로 이동 경로 생성
+
+  “/”로 시작하지 않을 경우 현재 경로를 기준으로 상대 경로를 사용
+
+  완전한 url로 사용도 가능
+
+
+## 6. 커맨드 객체를 이용해서 요청 파라미터 사용하기
+
+폼 전송 요청을 처리하는 컨트롤러 코드는 각 파라미터의 값을 구하기 위해 HttpServletRequest#getParameter 메서드를 사용
+
+파라미터가 매우 많을 경우를 위해 스프링은 요청 파라미터의 값을 커맨드(command) 객체에 담아주는 기능을 제공
+
+→ 요청 파라미터의 값을 전달받을 수 있는 세터 메서드를 포함하는 객체를 커맨드 객체로 사용
+
+커맨드 객체는 다음과 같이 요청 매핑 애노테이션이 적용된 메서드의 파라미터에 위치
+
+RegisterRequest 클래스에 모든 세터 메서드가 존재하고 스프링은 이 메서드를 사용해 요청 파라미터의 값을 커맨드 객체에 복사한 뒤 RegisterRequest 클래스 타입의 객체로 전달
+
+## 7. 뷰 JSP 코드에서 커맨드 객체 사용하기
+
+커맨드 객체를 사용해 정보를 표시하기
+
+- 스프링 MVC는 커맨드 객체의 (첫 글자를 소문자로 바꾼) 클래스 이름과 동일한 속성 이름을 사용해 커맨드 객체를 뷰에 전달
+
+## 8. @ModelAttribute 애노테이션으로 커맨드 객체 속성 이름 변경
+
+```java
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+@PostMapping("/register/step3")
+public String handleStep3(@ModelAttribute("formData") RegisterRequest regReq){
+	...
+}
+```
+
+@ModelAttribute 어노테이션을 사용해 모델에서 사용할 속성 이름을 값으로 대체 가능
+
+## 9. 커맨드 객체와 스프링 폼 연동
+
+스프링 MVC의 커스텀 태그를 사용해 좀 더 간단한 커맨드 객체의 값을 출력 가능
+
+- <form:form> 태그의 속성
+    - action: <form> 태그의 action 속성과 동일한 값을 사용
+    - modelAttribute: 커맨드 객체의 속성 이름을 지정, default command
+- <form:input>: <input> 태그 생성
+
+  path로 지정한 커맨드 객체의 프로퍼티를 <input> 태그의 value 속성값으로 사용
+
+  태그를 사용하려면 커맨드 객체가 존재해야 함
+
+  이 예제에선 step2.jsp에서 <form:form> 태그를 사용하기 때문에 step1.jsp에서 step2.jsp로 넘어오는 단계에서 이름이 registerRequest인 객체를 모델에 넣어줌
+
+- <form:password>
+
+  password 타입의 <input> 태그를 생성하므로 value의 속성값을 빈 문자열로 설정
+
+
+## 10. 컨트롤러 구현 없는 경로 매핑
+
+WebMvcConfigurer 인터페이스의 addViewControllers() 메서드를 사용하면 컨트롤러 구현없이 간단한 코드로 요청 경로와 뷰 이름을 연결 가능
+
+```java
+@Override
+public void addViewControllers(ViewControllerRegistry registry){
+	registry.addViewController("/main").setViewName("main");
+}
+```
+
+## 11. 주요 에러 발생 상황
+
+### 요청 매핑 애노테이션과 관련된 주요 익셉션
+
+- 404 에러: 요청 경로를 처리할 컨트롤러가 존재하지 않거나 MvcConfigurer를 이용한 설정이 없을 경우 발생
+    - 요청 경로가 올바른지
+    - 컨트롤러에 설정한 경로가 올바른지
+    - 컨트롤러 클래스를 빈으로 등록했는지
+    - 컨트롤러 클래스에 @Controller 애노테이션을 적용했는지
+
+### @RequestParam이나 커맨드 객체와 관련된 주요 익셉션
+
+- @RequestParam 애노테이션을 필수로 설정하고 기본값을 지정하지 않았을 경우
+
+  파라미터가 존재하지 않는다는 익셉션 발생 가능
+
+- 요청 파라미터의 값을 @RequestParam이 적용된 파라미터의 타입으로 변환할 수 없는 경우에도 에러 발생
+
+> **Logback으로 자세한 에러 로그 출력하기**
+>
+>
+> pom.xml에 Logback 관련 의존을 추가
+>
+> ```xml
+> <dependency>
+> 	<groupId>org.slf4j</groupId>
+> 	<artifactId>slf4j-api</artifactId>
+> 	<version>1.7.25</version>
+> </dependency>
+> 
+> <dependency>
+> 	<groupId>ch.qos.logback</groupId>
+> 	<artifactId>logback-classic</artifactId>
+> 	<version>1.2.3</version>
+> </dependency>
+> ```
+>
+> src/main/resourcs 폴더에 logback.xml 파일을 생성하고 src/main/resources 폴더에 logback.xml 파일 생성
+>
+
+## 12. 커맨드 객체: 중첩, 콜렉션 프로퍼티
+
+- Respondent 클래스:응답자 정보를 담음
+- AnsweredData 클래스:  설문 항목에 대한 답변과 응답자 정보를 함께 담음
+    - 리스트 타입의 프로퍼티 존재
+    - 중첩 프로퍼티를 가짐
+
+스프링 MVC는 커맨드 객체가 리스트 타입의 프로퍼티를 가졌거나 중첩 프로퍼티를 가지더라도 요청 파라미터의 값을 알맞게 커맨드 객체에 설정
+
+- “프로퍼티이름[인덱스]” 형식 → List 타입 프로퍼티의 값 목록으로 처리
+- “프로퍼티이름.프로퍼티이름” → 중첩 프로퍼티 값을 처리
+
+## 13. Model을 통해 컨트롤러에서 뷰에 데이터 전달하기
+
+컨트롤러는 뷰가 응담 화면을 구성하는데 필요한 데이터를 생성해 전달 → Model을 사용
+
+뷰에 데이터를 전달해야 하는 컨트롤러는 아래의 역할을 수행해야 함
+
+- 요청 매핑 애노테이션이 적용된 메서드의 파라미터로 Model을 추가
+- Model 파라미터의 addAttribute() 메서드로 뷰에서 사용할 데이터 전달
+
+  속성이름을 파라미터로 가짐
+
+
+### ModelAndView를 통한 뷰 선택과 모델 전달
+
+ModelAndView를 사용하면 뷰에 전달할 데이터 설정과 결과를 보여줄 뷰 이름 리턴을 한번에 처리할 수 있음
+
+뷰에 전달할 모델 데이터를 addObject 메서드로 추가하고 뷰 이름은 setViewName() 메서드를 통해 지정
+
+### GET 방식과 POST 방식에 동일 이름 커맨드 객체 사용하기
+
+<form:form> 태그를 위해선 커맨드 객체가 필요
+
+최초에 폼을 보여주는 요청에 대해 <form:form> 태그 사용을 위해선 폼 표시 요펑이 왔을 때 커맨드 객체를 생성해 모델에 저장 필요
+
+- Model에 직접 객체 추가
+- 커맨드 객체를 파라미터로 추가
+
+  이름을 명시적으로 지정하기 위해선 @ModelAttribute 애노테이션을 사용
+
+
+## 14. 주요 폼 태그 설명
+
+HTML 폼과 커맨드 객체를 연동하기 위한 JSP 태그 라이브러리
+
+### <form> 태그를 위한 커스텀 태그: <form:form>
+
+- Method와 Action 속성을 지정하지 않을 경우 method=”POST”, actions=현재요청URL로 설정
+- id 속성값으론 입력 폼의 값을 저장하는 커맨드 객체의 이름을 사용
+
+  기본값인 “command”가 아닐 경우 modelAttribute 속성값으로 커맨드 객체의 이름을 설정
+
+- action - 폼 데이터를 전송할 URL
+- enctype - 전송될 데이터의 인코딩 타입
+- method - 전송 방식
+- <form:form> 태그의 몸체
+
+  <input>, <select> 등 입력 폼을 출력하는데 필요한 HTML 태그 사용 가능
+
+
+### <input> 관련 커스텀 태그: <form:input>, <form:password>, <form:hidden>
+
+- <form:input>: path 속성을 사용해 연결할 커맨드 객체의 프로퍼티를 지정
+
+  id 속성과 name 속성값은 프로퍼티의 이름으로 설정, value는 <form:input> 커스텀 태그의 path 속성으로 지정한 커맨드 객체의 프로퍼티 타입 출력
+
+- <form:password>: password 타입의 <input> 태그 생성
+- <form:hidden>: hidden 타입의 <input> 태그 생성
+
+### <select> 관련 커스텀 태그: <form:select>, <form:options>, <form:option>
+
+- <select>: 선택 옵션 제공
+
+  옵션 정보는 보통 컨트롤러에서 생성해 뷰에 전달
+
+  뷰에 전달한 모델 객체를 갖고 간단하게 <selec>와 <option> 태그 생성 가능
+
+- <form:options>: <form:select> 태그에 중첩해 사용
+
+  item 속성에 값 목록으로 사용할 모델 이름을 설정
+
+  주로 컬렉션에 없는 값을 <option> 태그로 추가할 때 사용
+
+- <form:option>: <option> 태그를 직접 지정할 때 사용
+
+  value 속성을 통해 <option> 태그의 valu 속성값을 지정하고 몸체 내용을 지정하지 않으면 value 속성에 지정한 값을 태그로 사용
+
+  label 속성을 사용하면 그 값을 텍스트로 사용
+
+  사용한 컬렉션 객체가 String이 아닐 경우, itemValue와 itemLabel 속성을 사용 → 사용할 객체의 프로퍼티 지정
+
+
+→ 커맨드 객체의 프로퍼티 값과 일치하는 값을 갖는 <option>을 자동으로 선택
+
+### 체크박스 관련 커스텀 태그: <form:checkboxes>, <form:checkbox>
+
+한 개 이상의 값을 커맨드 객체의 특정 프로퍼티에 저장하고 싶을 때 List와 같은 타입을 사용하는데 HTML 입력 폼에서는 checkbox 타입의 <input> 태그를 사용
+
+- <form:checkboxes>: items 속성을 이용해 값으로 사용할 콜렉션을 지정
+
+  path 속성으로는 커맨드 객체의 프로퍼티 지정
+
+    <intput> 태그의 value 속성에 사용한 값이 체크박스를 위한 텍스트로 사용 
+
+  만약 String이 아닐 경우 itemValue 속성과 itemLabel 속성을 이용해 값과 텍스트로 사용할 객체의 프로퍼티 지정 가능
+
+- <form:checkbox>: 한개의 checkbox 타입의 <input> 태그를 한 개 생성할 때 사용
+
+  연결되는 프로퍼티 값이 true이면 “checked” 속성을 설정
+
+  생성되는 <input> 태그의 value 속성값으론 “true”를 사용
+
+  프로퍼티가 배열이나 Collection일 경우 해당 컬렉션 값이 포함되어 있다면 “checked”속성을 설정
+
+
+### 라디오버튼 관련 커스텀 태그: <form:radiobuttons>, <form:radiobutton>
+
+- <form:radiobuttons>: items 속성에 값으로 사용할 컬렉션을 전달하고 path 속성에 커맨드 객체의 프로퍼티 지정
+- <form:radiobutton>: 한개의 radion 타입 <input> 태그를 생성할 때 사용
+
+### <textarea> 태그를 위한 커스텀 태그: <form:textarea>
+
+게시글 내용과 같이 여러 줄을 입력받아야 하는 경우 사용
+
+커맨드 객체와 관련된 <testarea> 태그 생성 가능
+
+### CSS 및 HTML 태그와 관련된 공통 속성
+
+- CSS 관련
+    - cssClass: HTML의 class
+    - cssErrorClass: 폼 검증 에러 발생 시 HTML의 class
+    - cssStyle: HTML의 style

@@ -72,16 +72,6 @@ public class DispatcherServlet extends HttpServlet {
         }
     }
 
-    private static void handleAnnotationHandler(final HttpServletRequest request, final HttpServletResponse response,
-                                                final HandlerExecution handler){
-        try{
-            ModelAndView modelAndView = handler.handle(request, response);
-            renderView(modelAndView, request, response);
-        }catch (Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
     private Object getHandler(final HttpServletRequest request){
         return handlerMappings.stream()
                 .map(handlerMapping -> handlerMapping.getHandler(request))
