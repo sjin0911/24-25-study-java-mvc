@@ -4,15 +4,15 @@ import com.interface21.context.stereotype.Controller;
 import com.interface21.web.bind.annotation.RequestMapping;
 import com.interface21.web.bind.annotation.RequestMethod;
 import jakarta.servlet.http.HttpServletRequest;
+import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.rmi.NoSuchObjectException;
-import java.sql.Array;
 import java.util.*;
+import java.util.logging.Handler;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -31,19 +31,13 @@ public class AnnotationHandlerMapping implements HandlerMapping{
 
     public void initialize() {
         final Reflections reflections = new Reflections(basePackage);
-        final Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
+        final Map<Class<?>, Object> controllers = new ControllerScanner(reflections).getControllers();
 
-        for(Class<?> controllerClass : controllers){
-            final Method[] methods = controllerClass.getDeclaredMethods();
+        for(Class<?> controller : controllers.keySet()){
+            final Set<Method> methods = getMethods(controller);
             for(Method method : methods){
-                final RequestMapping  requestMapping = method.getAnnotation(RequestMapping.class);
-                final Object handler = getHandler(method);
-                final List<HandlerKey> handlerKeys = getHandlerKeys(requestMapping);
-
-                for(HandlerKey handlerKey : handlerKeys){
-                    handlerExecutions.put(handlerKey, new HandlerExecution(handler, method));
-                }
-            };
+                putHandlerExecution(method, controllers.get(controller));
+            }
         }
 
         log.info("Initialized AnnotationHandlerMapping!");
@@ -55,6 +49,9 @@ public class AnnotationHandlerMapping implements HandlerMapping{
         );
     }
 
+    private static Set<Method> getMethods(final Class<?> controller){
+        return ReflectionUtils.getAllMethods(controller, ReflectionUtils.withAnnotation(RequestMapping.class));
+    }
     private static List<HandlerKey> getHandlerKeys(final RequestMapping requestMapping){
         if(requestMapping != null){
             return Arrays.stream(requestMapping.method())
@@ -70,5 +67,14 @@ public class AnnotationHandlerMapping implements HandlerMapping{
             NoSuchMethodException e){
             throw new RuntimeException();
         }
+    }
+    private void putHandlerExecution(Method method, Object handler) {
+        final RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+        final List<HandlerKey> handlerKeys = getHandlerKeys(requestMapping);
+
+        for(HandlerKey handlerKey : handlerKeys){
+            handlerExecutions.put(handlerKey, new HandlerExecution(handler, method));
+        }
+
     }
 }
