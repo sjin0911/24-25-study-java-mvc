@@ -436,20 +436,20 @@ public String handleStep3(@ModelAttribute("formData") RegisterRequest regReq){
 
 스프링 MVC의 커스텀 태그를 사용해 좀 더 간단한 커맨드 객체의 값을 출력 가능
 
-- <form:form> 태그의 속성
-    - action: <form> 태그의 action 속성과 동일한 값을 사용
+- \<form:form> 태그의 속성
+    - action: \<form> 태그의 action 속성과 동일한 값을 사용
     - modelAttribute: 커맨드 객체의 속성 이름을 지정, default command
-- <form:input>: <input> 태그 생성
+- \<form:input>: \<input> 태그 생성
 
-  path로 지정한 커맨드 객체의 프로퍼티를 <input> 태그의 value 속성값으로 사용
+  path로 지정한 커맨드 객체의 프로퍼티를 \<input> 태그의 value 속성값으로 사용
 
   태그를 사용하려면 커맨드 객체가 존재해야 함
 
-  이 예제에선 step2.jsp에서 <form:form> 태그를 사용하기 때문에 step1.jsp에서 step2.jsp로 넘어오는 단계에서 이름이 registerRequest인 객체를 모델에 넣어줌
+  이 예제에선 step2.jsp에서 \<form:form> 태그를 사용하기 때문에 step1.jsp에서 step2.jsp로 넘어오는 단계에서 이름이 registerRequest인 객체를 모델에 넣어줌
 
-- <form:password>
+- \<form:password>
 
-  password 타입의 <input> 태그를 생성하므로 value의 속성값을 빈 문자열로 설정
+  password 타입의 \<input> 태그를 생성하므로 value의 속성값을 빈 문자열로 설정
 
 
 ## 10. 컨트롤러 구현 없는 경로 매핑
@@ -535,9 +535,9 @@ ModelAndView를 사용하면 뷰에 전달할 데이터 설정과 결과를 보�
 
 ### GET 방식과 POST 방식에 동일 이름 커맨드 객체 사용하기
 
-<form:form> 태그를 위해선 커맨드 객체가 필요
+\<form:form> 태그를 위해선 커맨드 객체가 필요
 
-최초에 폼을 보여주는 요청에 대해 <form:form> 태그 사용을 위해선 폼 표시 요펑이 왔을 때 커맨드 객체를 생성해 모델에 저장 필요
+최초에 폼을 보여주는 요청에 대해 \<form:form> 태그 사용을 위해선 폼 표시 요펑이 왔을 때 커맨드 객체를 생성해 모델에 저장 필요
 
 - Model에 직접 객체 추가
 - 커맨드 객체를 파라미터로 추가
@@ -549,7 +549,7 @@ ModelAndView를 사용하면 뷰에 전달할 데이터 설정과 결과를 보�
 
 HTML 폼과 커맨드 객체를 연동하기 위한 JSP 태그 라이브러리
 
-### <form> 태그를 위한 커스텀 태그: <form:form>
+### \<form> 태그를 위한 커스텀 태그: \<form:form>
 
 - Method와 Action 속성을 지정하지 않을 경우 method=”POST”, actions=현재요청URL로 설정
 - id 속성값으론 입력 폼의 값을 저장하는 커맨드 객체의 이름을 사용
@@ -559,35 +559,35 @@ HTML 폼과 커맨드 객체를 연동하기 위한 JSP 태그 라이브러리
 - action - 폼 데이터를 전송할 URL
 - enctype - 전송될 데이터의 인코딩 타입
 - method - 전송 방식
-- <form:form> 태그의 몸체
+- \<form:form> 태그의 몸체
 
-  <input>, <select> 등 입력 폼을 출력하는데 필요한 HTML 태그 사용 가능
+  \<input>, \<select> 등 입력 폼을 출력하는데 필요한 HTML 태그 사용 가능
 
 
-### <input> 관련 커스텀 태그: <form:input>, <form:password>, <form:hidden>
+### \<input> 관련 커스텀 태그: \<form:input>, \<form:password>, \<form:hidden>
 
-- <form:input>: path 속성을 사용해 연결할 커맨드 객체의 프로퍼티를 지정
+- \<form:input>: path 속성을 사용해 연결할 커맨드 객체의 프로퍼티를 지정
 
-  id 속성과 name 속성값은 프로퍼티의 이름으로 설정, value는 <form:input> 커스텀 태그의 path 속성으로 지정한 커맨드 객체의 프로퍼티 타입 출력
+  id 속성과 name 속성값은 프로퍼티의 이름으로 설정, value는 \<form:input> 커스텀 태그의 path 속성으로 지정한 커맨드 객체의 프로퍼티 타입 출력
 
-- <form:password>: password 타입의 <input> 태그 생성
-- <form:hidden>: hidden 타입의 <input> 태그 생성
+- \<form:password>: password 타입의 \<input> 태그 생성
+- \<form:hidden>: hidden 타입의 \<input> 태그 생성
 
-### <select> 관련 커스텀 태그: <form:select>, <form:options>, <form:option>
+### \<select> 관련 커스텀 태그: \<form:select>, \<form:options>, \<form:option>
 
-- <select>: 선택 옵션 제공
+- \<select>: 선택 옵션 제공
 
   옵션 정보는 보통 컨트롤러에서 생성해 뷰에 전달
 
   뷰에 전달한 모델 객체를 갖고 간단하게 <selec>와 <option> 태그 생성 가능
 
-- <form:options>: <form:select> 태그에 중첩해 사용
+- \<form:options>: \<form:select> 태그에 중첩해 사용
 
   item 속성에 값 목록으로 사용할 모델 이름을 설정
 
   주로 컬렉션에 없는 값을 <option> 태그로 추가할 때 사용
 
-- <form:option>: <option> 태그를 직접 지정할 때 사용
+- \<form:option>: <option> 태그를 직접 지정할 때 사용
 
   value 속성을 통해 <option> 태그의 valu 속성값을 지정하고 몸체 내용을 지정하지 않으면 value 속성에 지정한 값을 태그로 사용
 
@@ -598,11 +598,11 @@ HTML 폼과 커맨드 객체를 연동하기 위한 JSP 태그 라이브러리
 
 → 커맨드 객체의 프로퍼티 값과 일치하는 값을 갖는 <option>을 자동으로 선택
 
-### 체크박스 관련 커스텀 태그: <form:checkboxes>, <form:checkbox>
+### 체크박스 관련 커스텀 태그: \<form:checkboxes>, \<form:checkbox>
 
-한 개 이상의 값을 커맨드 객체의 특정 프로퍼티에 저장하고 싶을 때 List와 같은 타입을 사용하는데 HTML 입력 폼에서는 checkbox 타입의 <input> 태그를 사용
+한 개 이상의 값을 커맨드 객체의 특정 프로퍼티에 저장하고 싶을 때 List와 같은 타입을 사용하는데 HTML 입력 폼에서는 checkbox 타입의 \<input> 태그를 사용
 
-- <form:checkboxes>: items 속성을 이용해 값으로 사용할 콜렉션을 지정
+- \<form:checkboxes>: items 속성을 이용해 값으로 사용할 콜렉션을 지정
 
   path 속성으로는 커맨드 객체의 프로퍼티 지정
 
@@ -610,21 +610,21 @@ HTML 폼과 커맨드 객체를 연동하기 위한 JSP 태그 라이브러리
 
   만약 String이 아닐 경우 itemValue 속성과 itemLabel 속성을 이용해 값과 텍스트로 사용할 객체의 프로퍼티 지정 가능
 
-- <form:checkbox>: 한개의 checkbox 타입의 <input> 태그를 한 개 생성할 때 사용
+- \<form:checkbox>: 한개의 checkbox 타입의\<input> 태그를 한 개 생성할 때 사용
 
   연결되는 프로퍼티 값이 true이면 “checked” 속성을 설정
 
-  생성되는 <input> 태그의 value 속성값으론 “true”를 사용
+  생성되는 \<input> 태그의 value 속성값으론 “true”를 사용
 
   프로퍼티가 배열이나 Collection일 경우 해당 컬렉션 값이 포함되어 있다면 “checked”속성을 설정
 
 
-### 라디오버튼 관련 커스텀 태그: <form:radiobuttons>, <form:radiobutton>
+### 라디오버튼 관련 커스텀 태그: \<form:radiobuttons>, \<form:radiobutton>
 
-- <form:radiobuttons>: items 속성에 값으로 사용할 컬렉션을 전달하고 path 속성에 커맨드 객체의 프로퍼티 지정
-- <form:radiobutton>: 한개의 radion 타입 <input> 태그를 생성할 때 사용
+- \<form:radiobuttons>: items 속성에 값으로 사용할 컬렉션을 전달하고 path 속성에 커맨드 객체의 프로퍼티 지정
+- \<form:radiobutton>: 한개의 radion 타입 \<input> 태그를 생성할 때 사용
 
-### <textarea> 태그를 위한 커스텀 태그: <form:textarea>
+### \<textarea> 태그를 위한 커스텀 태그: \<form:textarea>
 
 게시글 내용과 같이 여러 줄을 입력받아야 하는 경우 사용
 
